@@ -3,11 +3,11 @@
 #include "utils.h"
 
 void loop() {
-    char *line, *args;
+    char *line, **args;
     int status;
 
     do {
-        printf("sch>");
+        printf("sch> ");
         line = read_line();
         args = split_line(line);
         status = execute(args);
@@ -18,6 +18,6 @@ void loop() {
 }
 
 int main(int argc, char *argv[]) {
-
+    loop();
     return EXIT_SUCCESS;
 }

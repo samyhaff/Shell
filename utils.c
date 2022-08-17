@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include "utils.h"
 
 char *read_line() {
@@ -64,4 +66,76 @@ char **split_line(char *line) {
     }
     tokens[position] = NULL;
     return tokens;
+}
+
+int launch(char **args) {
+    pid_t pid, wpid;
+    int status;
+
+    pid = fork();
+    if (pid == 0) {
+        if (execvp(args[0], args) == -1) {
+            perror("sch");
+        }
+        exit(EXIT_FAILURE);
+    } else if (pid < 0) perror("sch");
+    else {
+            do {
+                wpid = waitpid(pid, &status, WUNTRACED);
+            } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        }
+
+    return 1;
+}
+
+char *builtin_str[] = {
+  "cd",
+  "help",
+  "quit"
+};
+
+int (*builtin_func[]) (char **) = {
+  &cd,
+  &help,
+  &quit
+};
+
+int num_builtins() {
+    return sizeof(builtin_str) / sizeof(char *);
+}
+
+int cd(char **args) {
+    if (args[1] == NULL) {
+        fprintf(stderr, "expected argument to \"cd\"\n");
+    } else {
+        if (chdir(args[1]) != 0) perror("sch");
+    }
+    return 1;
+}
+
+int help(char **args)
+{
+  int i;
+  printf("The following are built in:\n");
+  for (i = 0; i < num_builtins(); i++) {
+    printf("  %s\n", builtin_str[i]);
+  }
+  return 1;
+}
+
+int quit(char **args)
+{
+  return 0;
+}
+
+int execute(char **args) {
+    int i;
+
+    if (args[0] == NULL) return 1;
+
+    for (i = 0; i < num_builtins(); i++) {
+        if (strcmp(args[0], builtin_str[i]) == 0)  return (*builtin_func[i])(args);
+    }
+
+    return launch(args);
 }
