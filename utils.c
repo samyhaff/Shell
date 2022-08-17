@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "utils.h"
 
 char *read_line() {
@@ -24,7 +25,7 @@ char *read_line() {
         }
         position++;
 
-        if (position == buffsize) {
+        if (position >= buffsize) {
             buffsize += BUFFSIZE;
             buffer = realloc(buffer, sizeof(char) * buffsize);
             if (!buffer) {
@@ -33,4 +34,34 @@ char *read_line() {
             }
         }
     }
+}
+
+char **split_line(char *line) {
+    int buffsize = TOK_BUFSIZE, position = 0;
+    char **tokens = malloc(buffsize * sizeof(char *));
+    char *token;
+
+    if (!tokens) {
+        fprintf(stderr, "allocation error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    token = strtok(line, TOK_DELIM);
+    while (token != NULL) {
+        tokens[position] = token;
+        position++;
+
+        if (position >= buffsize) {
+            buffsize += TOK_BUFSIZE;
+            tokens = realloc(tokens, buffsize * sizeof(char*));
+            if (!tokens) {
+                fprintf(stderr, "allocation error\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        token = strtok(NULL, TOK_DELIM);
+    }
+    tokens[position] = NULL;
+    return tokens;
 }
