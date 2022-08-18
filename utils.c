@@ -5,37 +5,53 @@
 #include <sys/wait.h>
 #include "utils.h"
 
-char *read_line() {
-    int buffsize = BUFFSIZE;
-    int position = 0;
-    char *buffer = malloc(sizeof(char) * buffsize);
-    int c;
+// char *read_line() {
+//     int buffsize = BUFFSIZE;
+//     int position = 0;
+//     char *buffer = malloc(sizeof(char) * buffsize);
+//     int c;
+//
+//     if (!buffer) {
+//         fprintf(stderr, "allocation error\n");
+//         exit(EXIT_FAILURE);
+//     }
+//
+//     while (1) {
+//         c = getchar();
+//
+//         if (c == EOF || c == '\n') {
+//             buffer[position] = '\0';
+//             return buffer;
+//         } else {
+//             buffer[position] = c;
+//         }
+//         position++;
+//
+//         if (position >= buffsize) {
+//             buffsize += BUFFSIZE;
+//             buffer = realloc(buffer, sizeof(char) * buffsize);
+//             if (!buffer) {
+//                 fprintf(stderr, "allocation error\n");
+//                 exit(EXIT_FAILURE);
+//             }
+//         }
+//     }
+// }
 
-    if (!buffer) {
-        fprintf(stderr, "allocation error\n");
-        exit(EXIT_FAILURE);
+char *read_line()
+{
+    char *line = NULL;
+    ssize_t buffsize = 0;
+
+    if (getline(&line, &buffsize, stdin) == -1){
+        if (feof(stdin)) exit(EXIT_SUCCESS);
+        else {
+            perror("readline");
+            exit(EXIT_FAILURE);
+        }
     }
 
-    while (1) {
-        c = getchar();
-
-        if (c == EOF || c == '\n') {
-            buffer[position] = '\0';
-            return buffer;
-        } else {
-            buffer[position] = c;
-        }
-        position++;
-
-        if (position >= buffsize) {
-            buffsize += BUFFSIZE;
-            buffer = realloc(buffer, sizeof(char) * buffsize);
-            if (!buffer) {
-                fprintf(stderr, "allocation error\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-    }
+    return line;
 }
 
 char **split_line(char *line) {
@@ -89,15 +105,15 @@ int launch(char **args) {
 }
 
 char *builtin_str[] = {
-  "cd",
-  "help",
-  "quit"
+    "cd",
+    "help",
+    "quit"
 };
 
 int (*builtin_func[]) (char **) = {
-  &cd,
-  &help,
-  &quit
+    &cd,
+    &help,
+    &quit
 };
 
 int num_builtins() {
@@ -115,17 +131,17 @@ int cd(char **args) {
 
 int help(char **args)
 {
-  int i;
-  printf("The following are built in:\n");
-  for (i = 0; i < num_builtins(); i++) {
-    printf("  %s\n", builtin_str[i]);
-  }
-  return 1;
+    int i;
+    printf("The following are built in:\n");
+    for (i = 0; i < num_builtins(); i++) {
+        printf("  %s\n", builtin_str[i]);
+    }
+    return 1;
 }
 
 int quit(char **args)
 {
-  return 0;
+    return 0;
 }
 
 int execute(char **args) {

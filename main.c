@@ -7,7 +7,7 @@ void loop() {
     int status;
 
     do {
-        printf("sch> ");
+        printf("\033[1;31msch>\033[0m ");
         line = read_line();
         args = split_line(line);
         status = execute(args);
